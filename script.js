@@ -13,6 +13,12 @@ const createScene = function () {
     // camera.setPosition(new BABYLON.Vector3(-0.14, 0.005, 0.03)); // This line is removed
     camera.attachControl(canvas, true);
 
+    // Limit camera controls to X-axis
+    camera.inputs.attached.mousewheel.axis = BABYLON.Axis.X;
+    camera.inputs.attached.pointers.axis = BABYLON.Axis.X;
+    camera.lowerBetaLimit = camera.beta;
+    camera.upperBetaLimit = camera.beta;
+
     // Enable auto-rotation
     camera.autoRotate = true;
     camera.autoRotateSpeed = 0.5; // Adjust speed as needed
@@ -94,6 +100,24 @@ const createScene = function () {
             // console.log("Model Dimension for Framing (Height/Width/Depth):", modelDimensionForFraming);
             // console.log("Calculated Camera Distance (Radius):", distance);
             // console.log("Camera FOV (radians):", camera.fov);
+
+            // Add a SpotLight
+            const spotLightPosition = new BABYLON.Vector3(modelCenter.x, modelCenter.y + 5, modelCenter.z);
+            const spotLightDirection = modelCenter.subtract(spotLightPosition).normalize(); // Direction from light position to model center
+
+            const spotLight = new BABYLON.SpotLight(
+                "spotLight",
+                spotLightPosition,
+                spotLightDirection,
+                5 * Math.PI / 180, // Angle in radians
+                2, // Exponent (falloff)
+                scene
+            );
+            spotLight.intensity = 75;
+            // Deep red color
+            const deepRedColor = new BABYLON.Color3(0.6, 0.1, 0.1);
+            spotLight.diffuse = deepRedColor;
+            spotLight.specular = deepRedColor;
         }
     });
 
@@ -105,12 +129,12 @@ const createScene = function () {
     // Light source is conceptually "slightly up, to the right, and slightly forward" from the model.
     // If model is at origin, source could be (5, 5, 5).
     // Direction of light rays is from source to target (model origin). So, (0-5, 0-5, 0-5) = (-5, -5, -5).
-    const directionalLight = new BABYLON.DirectionalLight("directionalLight", new BABYLON.Vector3(-1, -1, -1).normalize(), scene);
-    directionalLight.intensity = 0.8; // Medium intensity
-    directionalLight.diffuse = new BABYLON.Color3(1, 1, 1); // White light
-    directionalLight.specular = new BABYLON.Color3(1, 1, 1); // White highlights
-    // Set a conceptual position for the light source (e.g. for shadow maps if they were used)
-    directionalLight.position = new BABYLON.Vector3(5, 5, 5);
+    // const directionalLight = new BABYLON.DirectionalLight("directionalLight", new BABYLON.Vector3(-1, -1, -1).normalize(), scene);
+    // directionalLight.intensity = 0.8; // Medium intensity
+    // directionalLight.diffuse = new BABYLON.Color3(1, 1, 1); // White light
+    // directionalLight.specular = new BABYLON.Color3(1, 1, 1); // White highlights
+    // // Set a conceptual position for the light source (e.g. for shadow maps if they were used)
+    // directionalLight.position = new BABYLON.Vector3(5, 5, 5);
 
     return scene;
 };

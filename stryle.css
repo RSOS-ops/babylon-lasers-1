@@ -1,0 +1,16 @@
+html, body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: black; /* Set background to black */
+}
+
+#renderCanvas {
+    width: 100%;
+    height: 100%;
+    touch-action: none; /* Recommended for Babylon.js canvas */
+    display: block; /* Remove potential extra space below canvas */
+    outline: none; /* Remove default focus outline */
+}
