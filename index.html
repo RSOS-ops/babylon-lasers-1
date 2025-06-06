@@ -29,7 +29,8 @@
         const canvas = document.getElementById('renderCanvas');
         const engine = new BABYLON.Engine(canvas, true);
 
-        const createScene = function () {
+        const createScene = async function () {
+            await Recast();
             const scene = new BABYLON.Scene(engine);
             scene.clearColor = new BABYLON.Color3(0.2, 0.2, 0.2); // Dark grey background
 
@@ -203,10 +204,15 @@
             return scene;
         };
 
-        const scene = createScene();
-
-        engine.runRenderLoop(function () {
-            scene.render();
+        // Update the scene creation and rendering logic
+        createScene().then(scene => {
+            engine.runRenderLoop(function () {
+                if (scene) { // Check if scene is not undefined
+                    scene.render();
+                }
+            });
+        }).catch(error => {
+            console.error("Error creating scene:", error);
         });
 
         window.addEventListener('resize', function () {
