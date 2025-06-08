@@ -6,24 +6,36 @@ const laserOffset1 = new BABYLON.Vector3(-0.8, 0.8, -1);
 const laserOffset2 = new BABYLON.Vector3(0.8, 0.8, -1);
 const laserOffset3 = new BABYLON.Vector3(-0.8, -0.8, -1);
 const laserOffset4 = new BABYLON.Vector3(0.8, -0.8, -1);
+const laserOffset5 = new BABYLON.Vector3(-1.0, 0.6, -1);
+const laserOffset6 = new BABYLON.Vector3(1.0, 0.6, -1);
+const laserOffset7 = new BABYLON.Vector3(-1.0, -0.6, -1);
+const laserOffset8 = new BABYLON.Vector3(1.0, -0.6, -1);
 
 let laserPulseStates = [
-    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null },
-    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null },
-    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null },
-    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null }
+    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null }, // Laser 0 (Bank 1)
+    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null }, // Laser 1 (Bank 1)
+    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null }, // Laser 2 (Bank 1)
+    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null }, // Laser 3 (Bank 1)
+    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null }, // Laser 4 (Bank 2) - placeholder
+    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null }, // Laser 5 (Bank 2) - placeholder
+    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null }, // Laser 6 (Bank 2) - placeholder
+    { isPulsing: false, pulseOriginalColor: null, pulseCurrentColor: null }  // Laser 7 (Bank 2) - placeholder
 ];
 
 let laserAngleStates = [
-    { originalDirection: null, customDirection: null, isCustomActive: false },
-    { originalDirection: null, customDirection: null, isCustomActive: false },
-    { originalDirection: null, customDirection: null, isCustomActive: false },
-    { originalDirection: null, customDirection: null, isCustomActive: false }
+    { originalDirection: null, customDirection: null, isCustomActive: false }, // Laser 0 (Bank 1)
+    { originalDirection: null, customDirection: null, isCustomActive: false }, // Laser 1 (Bank 1)
+    { originalDirection: null, customDirection: null, isCustomActive: false }, // Laser 2 (Bank 1)
+    { originalDirection: null, customDirection: null, isCustomActive: false }, // Laser 3 (Bank 1)
+    { originalDirection: null, customDirection: null, isCustomActive: false }, // Laser 4 (Bank 2) - placeholder
+    { originalDirection: null, customDirection: null, isCustomActive: false }, // Laser 5 (Bank 2) - placeholder
+    { originalDirection: null, customDirection: null, isCustomActive: false }, // Laser 6 (Bank 2) - placeholder
+    { originalDirection: null, customDirection: null, isCustomActive: false }  // Laser 7 (Bank 2) - placeholder
 ];
 
 // Structure for laserEffectTimers, to be initialized properly later.
 // Example: { strobeTimer: 0, strobeInterval: 0, angleChangeTimer: 0, angleChangeInterval: 0, originalColor: null, baseDirection: null }
-let laserEffectTimers = [null, null, null, null]; // Will be populated by raveLasers1 setup
+let laserEffectTimers = [null, null, null, null, null, null, null, null]; // Will be populated by raveLasers1 setup
 
 // Standard laser color - this should ideally be sourced from a single definition.
 // For now, raveLasers1 will use this to create the Color4.
@@ -116,8 +128,8 @@ function laserAngleChange1(laserIndex, baseDirection) {
 
 // Corresponds to the conceptual "rave-lasers-1"
 function raveLasers1(deltaTimeInSeconds, camera, worldLaserOrigins) {
-    if (!camera || !worldLaserOrigins || worldLaserOrigins.length !== 4) {
-        console.error("raveLasers1: Missing camera or worldLaserOrigins.");
+    if (!camera || !worldLaserOrigins || worldLaserOrigins.length !== 4) { // Expecting 4 origins for laserbank-1
+        console.error("raveLasers1 (for bank-1): Missing camera or worldLaserOrigins not of length 4.", worldLaserOrigins ? worldLaserOrigins.length : 'undefined');
         return;
     }
 
@@ -387,7 +399,7 @@ const createScene = async function () {
     }
 
     const laserColor = new BABYLON.Color3(1, 0, 0); // Red
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 8; i++) {
         const laserLine = BABYLON.MeshBuilder.CreateLines("laser" + i, {
             points: [BABYLON.Vector3.Zero(), new BABYLON.Vector3(0.01, 0, 0)],
             updatable: true,
@@ -438,7 +450,10 @@ createScene().then(result => {
 
             const collectedWorldLaserOrigins = [];
             const collectedFinalLaserDirections = [];
-            const laserOffsets = [laserOffset1, laserOffset2, laserOffset3, laserOffset4];
+            const laserOffsets = [
+                laserOffset1, laserOffset2, laserOffset3, laserOffset4,
+                laserOffset5, laserOffset6, laserOffset7, laserOffset8
+            ]; // NEW LINE
 
             // First pass: Calculate all laser origins and their intended/custom directions
             for (let i = 0; i < laserLines.length; i++) {
@@ -462,8 +477,12 @@ createScene().then(result => {
 
             // Call raveLasers1 to update laser effect states (strobing, new angle decisions)
             // It uses collectedWorldLaserOrigins to calculate base directions for any new angle changes.
-            if (collectedWorldLaserOrigins.length === 4) {
-                raveLasers1(deltaTimeInSeconds, camera, collectedWorldLaserOrigins);
+            // Ensure we have enough origins collected before trying to slice and call
+            if (collectedWorldLaserOrigins.length >= 4) {
+                raveLasers1(deltaTimeInSeconds, camera, collectedWorldLaserOrigins.slice(0, 4));
+            } else {
+                // This case should ideally not happen if the loops are set up for 8 lasers correctly
+                // console.warn("Render loop did not collect enough world origins for laserbank-1 processing.");
             }
 
             // Second pass: Update all laser line geometries based on calculated states
